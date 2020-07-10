@@ -12,19 +12,24 @@ Vue.prototype.$axios = axios;
 //element-ui
 import Element from "element-ui"
 import 'element-ui/lib/theme-chalk/index.css'
+
 Vue.use(Element);
 
+import settings from "./settings";
+Vue.prototype.$settings = settings;
 
+// 导入极验
+import "../static/js/gt.js"
 
 // 全局css
 import "../static/css/global.css"
 
-Vue.config.productionTip = false;
+Vue.config.productionTip = false
 
 /* eslint-disable no-new */
 new Vue({
     el: '#app',
     router,
     components: {App},
-    // template: '<App/>'
-});
+    template: '<App/>'
+})
