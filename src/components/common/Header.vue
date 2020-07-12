@@ -23,7 +23,7 @@
                     <div class="login-box full-left">
                         <router-link to="/home/login/">个人中心</router-link>
                         &nbsp;|&nbsp;
-                        <span>退出登录</span>
+                   <router-link to="/home/login">登录</router-link>
                     </div>
                 </div>
                 <!--          用户不存在      -->
@@ -35,7 +35,7 @@
                     <div class="login-box full-left">
                         <router-link to="/home/login/">登录</router-link>
                         &nbsp;|&nbsp;
-                        <span>注册</span>
+                    <router-link to="/user/register/">注册</router-link>
                     </div>
                 </div>
 

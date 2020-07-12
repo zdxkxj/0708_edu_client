@@ -1,19 +1,39 @@
 <template>
     <div class="footer">
         <ul>
-            <li>关于我们</li>
-            <li>联系我们</li>
-            <li>百知教育</li>
-            <li>帮助中心</li>
-            <li>意见反馈</li>
-            <li>新手指南</li>
+            <li v-for="(footer,index) in footer_list" :key="index">
+
+                <a :href="footer.link" v-if="footer.is_site" style="color: #f0f0f0">{{footer.title}}</a>
+                <router-link v-else :to="footer.link" style="color: #f0f0f0">{{footer.title}}</router-link>
+            </li>
         </ul>
     </div>
 </template>
 
 <script>
     export default {
-        name: "Footer"
+        name: "Footer", data() {
+            return {
+                footer_list: []
+            }
+        },
+        methods: {
+            get_all_banner() {
+                this.$axios.get(this.$settings.HOST + "home/footer/").then(res => {
+                    // console.log(res.data);
+                    this.footer_list = res.data
+                    // console.log(this.banner_list);
+                    // for (let a in res.data) {
+                    //     // console.log(a);
+                    //     console.log(this.banner_list[a]);
+                    // }
+                }).catch(error => {
+                })
+            }
+        },
+        created() {
+            this.get_all_banner()
+        }
     }
 </script>
 

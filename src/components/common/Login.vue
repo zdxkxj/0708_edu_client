@@ -2,7 +2,7 @@
     <div class="login box">
         <img src="../../../static/image/03.png" alt="">
         <div class="login">
-            <div class="login-title">
+            <div class="login-title"><br>
                 <img src="../../../static/image/logo.png" alt="">
                 <p>百知教育给你最优质的学习体验!</p>
             </div>
@@ -24,18 +24,18 @@
                     </div>
                     <button class="login_btn btn btn-primary" @click="get_captcha">登录</button>
                     <p class="go_login">没有账号
-                        <span>立即注册</span>
+                    <router-link to="/user/register/">立即注册</router-link>
                     </p>
                 </div>
-                <div class="inp" v-show="">
-                    <input type="text" placeholder="手机号码" class="user">
-                    <input type="text" class="pwd" placeholder="短信验证码">
-                    <button id="get_code" class="btn btn-primary">获取验证码</button>
-                    <button class="login_btn">登录</button>
-                    <span class="go_login">没有账号
-                    <span>立即注册</span>
-                </span>
-                </div>
+<!--                <div class="inp" v-show="">-->
+<!--                    <input type="text" placeholder="手机号码" class="user">-->
+<!--                    <input type="text" class="pwd" placeholder="短信验证码">-->
+<!--                    <button id="get_code" class="btn btn-primary">获取验证码</button>-->
+<!--                    <button class="login_btn">登录</button>-->
+<!--                    <span class="go_login">没有账号-->
+<!--                    <span>立即注册</span>-->
+<!--                </span>-->
+<!--                </div>-->
             </div>
         </div>
     </div>
@@ -94,13 +94,13 @@
                             geetest_validate: validate.geetest_validate,
                             geetest_seccode: validate.geetest_seccode
                         }
-                    }).then(response=>{
+                    }).then(response => {
                         console.log(response.data);
-                        if(response.data.status){
+                        if (response.data.status) {
                             // 验证码验证成功  登录
                             self.user_login()
                         }
-                    }).catch(error=>{
+                    }).catch(error => {
                         console.log(error);
                     });
                 });
@@ -129,10 +129,13 @@
                     } else {
                         // 代表用户不需要记住密码  则将已保存的用户信息删除
                         // 用户不需要记住我时  将localStorage中的记录的用户信息删除
-                        // localStorage.clear()
-                        // localStorage.removeItem("username");
-                        sessionStorage.user_token = response.data.token;
+                        localStorage.clear()
+                        localStorage.removeItem("username");
+                        // sessionStorage.user_token = response.data.token;
+
                     }
+
+
                     this.$message({
                         message: '恭喜你，登录成功',
                         type: 'success'
