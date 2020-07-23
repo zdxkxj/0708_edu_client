@@ -18,12 +18,13 @@
                 <div class="login-bar full-right" v-if="token">
                     <div class="shop-cart full-left">
                         <img src="/static/image/" alt="">
-                        <span><router-link to="/cart">购物车</router-link></span>
+                        <span><router-link to="/cart">{{this.$store.state.cart_length}}购物车</router-link></span>
                     </div>
                     <div class="login-box full-left">
                         <router-link to="/home/login/">个人中心</router-link>
                         &nbsp;|&nbsp;
-                   <router-link to="/home/login">登录</router-link>
+                                           <router-link to="/home/login">退出登录</router-link>
+<!--                        <span><a href="javascript:void(0);" @click="logout">退出登录</a></span>-->
                     </div>
                 </div>
                 <!--          用户不存在      -->
@@ -35,7 +36,7 @@
                     <div class="login-box full-left">
                         <router-link to="/home/login/">登录</router-link>
                         &nbsp;|&nbsp;
-                    <router-link to="/user/register/">注册</router-link>
+                        <router-link to="/user/register/">注册</router-link>
                     </div>
                 </div>
 
@@ -58,6 +59,12 @@
             this.get_token()
         },
         methods: {
+
+            // logout() {
+            //     localStorage.removeItem('token');
+            //     sessionStorage.removeItem('token');
+            //     this.get_token();
+            // },
             // 获取token  确定用户登录状态
             get_token() {
                 this.token = localStorage.user_token || sessionStorage.user_token;

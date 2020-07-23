@@ -5,6 +5,9 @@
             <div class="course-info">
                 <!--       视频播放的div         -->
                 <div class="wrap-left">
+                    <!--
+                           :options="playerOptions"  设置播放视频的方式
+                           -->
                     <videoPlayer class="video-player vjs-custom-skin"
                                  ref="videoPlayer"
                                  :playsinline="true"
@@ -16,22 +19,26 @@
                 </div>
                 <div class="wrap-right">
                     <h3 class="course-name">{{course.name}}</h3>
-                    <p class="data">{{course.students}}在学&nbsp;&nbsp;&nbsp;&nbsp;课程总时长：{{course.lessons}}课时/{{course.lessons==course.pub_lessons?'更新完成':`已更新${course.pub_lessons}课时`}}&nbsp;&nbsp;&nbsp;&nbsp;难度{{course.level_name}}</p>
+                    <p class="data">{{course.students}}人在学&nbsp;&nbsp;&nbsp;&nbsp;课程总时长：{{course.lessons}}课时/{{course.lessons==course.pub_lessons?'更新完成':`已更新${course.pub_lessons}课时`}}&nbsp;&nbsp;&nbsp;&nbsp;难度：{{course.level_name}}</p>
                     <div class="sale-time">
-                        <p class="sale-type">限时免费</p>
-                        <p class="expire">距离结束：仅剩 110天 13小时 33分 <span class="second">08</span> 秒</p>
+                        <p class="sale-type">{{course.discount_name}}</p>
+                        <p class="expire">距离结束：仅剩 {{parseInt(course.active_time/(24*3600))}}天
+                            {{parseInt(course.active_time/3600%24)}}小时
+                            {{parseInt(course.active_time/60%60)}}分 <span class="second">{{parseInt(course.active_time%60)}}</span>
+                            秒</p>
                     </div>
                     <p class="course-price">
                         <span>活动价</span>
-                        <span class="discount">¥0.00</span>
-                        <span class="original">{{course.price}}</span>
+                        <span class="discount">¥{{course.real_price}}</span>
+                        <span class="original">¥{{course.price}}</span>
                     </p>
                     <div class="buy">
                         <div class="buy-btn">
                             <button class="buy-now">立即购买</button>
                             <button class="free">免费试学</button>
                         </div>
-                        <div class="add-cart"><img src="/static/image/cart-yellow.svg" alt="">加入购物车</div>
+                        <div class="add-cart" @click="addCart"><img src="/static/image/cart-yellow.svg" alt="">加入购物车
+                        </div>
                     </div>
                 </div>
             </div>
@@ -49,16 +56,21 @@
                     <div class="tab-item" v-if="tabIndex==1">
                         <div v-html="course.brief_html"></div>
                     </div>
+                    <!--             章节相关的信息       -->
                     <div class="tab-item" v-if="tabIndex==2">
                         <div class="tab-item-title">
                             <p class="chapter">课程章节</p>
                             <p class="chapter-length">共{{chapter_list.length}}章 {{course.lessons}}个课时</p>
                         </div>
+                        <!--                 章节       -->
                         <div class="chapter-item" v-for="chapter in chapter_list">
-                            <p class="chapter-title"><img src="/static/image/1.svg" alt="">第{{chapter.chapter}}章·{{chapter.name}}</p>
+                            <p class="chapter-title"><img src="/static/image/1.svg" alt="">第{{chapter.chapter}}章·{{chapter.name}}
+                            </p>
                             <ul class="lesson-list">
-                                <li class="lesson-item" v-for="(lesson,key) in chapter.coursesections">
-                                    <p class="name"><span class="index">{{chapter.chapter}}-{{key+1}}</span> {{lesson.name}}
+                                <!--章节对应的课时-->
+                                <li class="lesson-item" v-for="(lesson, key) in chapter.coursesections">
+                                    <p class="name"><span class="index">{{chapter.chapter}}-{{key+1}}</span>
+                                        {{lesson.name}}
                                         <span class="free" v-if="lesson.free_trail">免费</span>
                                     </p>
                                     <p class="time">07:30 <img src="/static/image/chapter-player.svg"></p>
@@ -109,10 +121,12 @@
             return {
                 course_id: 0,
                 tabIndex: 2, // 当前选项卡显示的下标
+                // 课程信息
                 course: {
-                    teacher:{},
+                    teacher: {},
                 },
-                chapter_list:[],
+                // 章节章节对应的课时
+                chapter_list: [],
                 playerOptions: {
                     playbackRates: [0.7, 1.0, 1.5, 2.0], // 播放速度
                     autoplay: false, //如果true,则自动播放
@@ -133,13 +147,51 @@
             }
         },
         methods: {
+
+            // 检查用户是否已经登录
+            check_user_login() {
+                let token = localStorage.user_token || sessionStorage.user_token;
+                if (!token) {
+                    let self = this;
+                    this.$confirm("对不起，请登录后再添加购物车！", {
+                        callback() {
+                            self.$router.push("/home/login/");
+                        }
+                    });
+                    return false
+                }
+                return token;
+            },
+
+            // 添加商品到购物车
+            addCart() {
+                // 添加商品前用户必须已经登录了
+                let token = this.check_user_login();
+                // 发起请求添加商品
+                this.$axios.post(`${this.$settings.HOST}cart/option/`, {
+                    course_id: this.course_id,
+                }, {
+                    headers: {
+                        // 提交token必须在请求头声明token  jwt必须有空格
+                        "Authorization": "jwt " + token,
+                    }
+                }).then(response => {
+                    this.$message.success(response.data.message);
+                    // 想状态机提交动作来修改商品的总数
+                    this.$store.commit("add_cart", response.data.cart_length)
+                }).catch(error => {
+                    console.log(error.response);
+                })
+            },
+
+            // 获取课程id
             get_course_id() {
                 let course_id = this.$route.params.id;
                 if (course_id > 0) {
                     this.course_id = parseInt(course_id)
                 } else {
                     let self = this;
-                    this.alert('对不起，访问的页面不存在', '错误', {
+                    this.alert("对不起，访问的页面不存在", "错误", {
                         callback() {
                             self.$route.go(-1);
                         }
@@ -148,29 +200,48 @@
                 }
                 return course_id;
             },
+
+            // 获取当前课程的详细信息
             get_course_detail() {
                 this.$axios({
-                    url: this.$settings.HOST + 'course/detail/' + this.course_id,
+                    url: this.$settings.HOST + "course/detail/" + this.course_id,
                     method: 'get',
                 }).then(response => {
                     this.course = response.data;
-                    this.playerOptions.sources=response.data.course_video;
-                    this.playerOptions.poster=response.data.course_img;
+
+                    // 播放的视频
+                    this.playerOptions.sources[0].src = response.data.course_video;
+                    this.playerOptions.poster = response.data.course_img;
+
+                    // 设置课程活动的倒计时
+                    if (this.course.active_time > 0) {
+                        let timer = setInterval(() => {
+                            if (this.course.active_time > 1) {
+                                this.course.active_time -= 1
+                            } else {
+                                clearInterval(timer)
+                            }
+                        }, 1000)
+                    }
+
+                }).catch(error => {
+                    console.log(error.response);
+                })
+            },
+
+            // 获取章节以及对应的课时信息
+            get_course_chapter() {
+                this.$axios.get(`${this.$settings.HOST}course/chapter/`, {
+                    params: {
+                        course: this.course_id,
+                    }
+                }).then(res => {
+                    this.chapter_list = res.data;
                 }).catch(error => {
                     console.log(error);
                 })
             },
-            get_course_chapter(){
-                this.$axios.get(`${this.$settings.HOST}course/chapter/`, {
-                    params:{
-                        course:this.course_id,
-                    }
-                }).then(res=>{
-                  this.chapter_list=res.data;
-                }).catch(error=>{
-                    console.log(error);
-                })
-            },
+
             onPlayerPlay(event) {
 
             },
@@ -182,7 +253,6 @@
             this.get_course_id();
             this.get_course_detail();
             this.get_course_chapter();
-
         },
         components: {
             Header, Footer, videoPlayer
